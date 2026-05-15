@@ -10,12 +10,13 @@ export default function CartDrawer() {
   const navigate = useNavigate();
   const [theme, setTheme] = useState('dark');
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    setTheme(savedTheme);
-  }, []);
+// top section
+useEffect(() => {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  setTheme(savedTheme);
+}, []);
 
-  const close = () => toggleCart(false);
+const close = () => toggleCart(false);
 
   const goCheckout = () => {
     close();
@@ -60,8 +61,21 @@ export default function CartDrawer() {
         {cart.items.length > 0 && (
           <div style={footStyle}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-              <span style={{ color: theme === 'dark' ? "#aaa" : "#666", fontSize: 14 }}>Subtotal</span>
-              <span style={{ fontWeight: 700, fontSize: 18, color: theme === 'dark' ? "#e8e8f0" : "#1a1a1e" }}>${cart.total.toFixed(2)}</span>
+// subtotal section
+<div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+  <span style={{ color: theme === 'dark' ? "#aaa" : "#666", fontSize: 14 }}>
+    Subtotal
+  </span>
+  <span
+    style={{
+      fontWeight: 700,
+      fontSize: 18,
+      color: theme === 'dark' ? "#e8e8f0" : "#1a1a1e",
+    }}
+  >
+    ${(cart.total / 100).toFixed(2)}
+  </span>
+</div>
             </div>
             <p style={{ color: theme === 'dark' ? "#555" : "#999", fontSize: 12, marginBottom: 16, textAlign: "center" }}>
               Shipping &amp; taxes calculated at checkout
@@ -86,17 +100,75 @@ function CartItem({ item, theme }) {
       <img src={item.thumbnail} alt={item.title} style={s.thumb}
         onError={(e) => { e.target.src = "https://placehold.co/80x96?text=img"; }} />
       <div style={{ flex: 1 }}>
-        <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 2, color: theme === 'dark' ? "#e8e8f0" : "#1a1a1e" }}>{item.title}</p>
-        {item.size  && <p style={{ ...s.meta, color: theme === 'dark' ? "#888" : "#666" }}>Size: {item.size}</p>}
-        {item.color && <p style={{ ...s.meta, color: theme === 'dark' ? "#888" : "#666" }}>Color: {item.color}</p>}
-        <p style={{ fontWeight: 700, fontSize: 14, marginTop: 4, color: theme === 'dark' ? "#e8e8f0" : "#1a1a1e" }}>
-          ${(item.price * item.quantity).toFixed(2)}
-        </p>
-        <div style={s.qtyRow}>
-          <button style={theme === 'dark' ? s.qtyBtn : s.qtyBtnLight} onClick={() => updateQuantity({ ...key, quantity: item.quantity - 1 })}>−</button>
-          <span style={{ minWidth: 20, textAlign: "center", fontSize: 14, fontWeight: 600, color: theme === 'dark' ? "#e8e8f0" : "#1a1a1e" }}>{item.quantity}</span>
-          <button style={theme === 'dark' ? s.qtyBtn : s.qtyBtnLight} onClick={() => updateQuantity({ ...key, quantity: item.quantity + 1 })}>+</button>
-          <button style={theme === 'dark' ? s.removeBtn : s.removeBtnLight} onClick={() => removeFromCart(key)}>Remove</button>
+// CartItem section
+<p
+  style={{
+    fontWeight: 600,
+    fontSize: 14,
+    marginBottom: 2,
+    color: theme === 'dark' ? "#e8e8f0" : "#1a1a1e",
+  }}
+>
+  {item.title}
+</p>
+
+{item.size && (
+  <p style={{ ...s.meta, color: theme === 'dark' ? "#888" : "#666" }}>
+    Size: {item.size}
+  </p>
+)}
+
+{item.color && (
+  <p style={{ ...s.meta, color: theme === 'dark' ? "#888" : "#666" }}>
+    Color: {item.color}
+  </p>
+)}
+
+<p
+  style={{
+    fontWeight: 700,
+    fontSize: 14,
+    marginTop: 4,
+    color: theme === 'dark' ? "#e8e8f0" : "#1a1a1e",
+  }}
+>
+  ${((item.price * item.quantity) / 100).toFixed(2)}
+</p>
+
+<div style={s.qtyRow}>
+  <button
+    style={theme === 'dark' ? s.qtyBtn : s.qtyBtnLight}
+    onClick={() => updateQuantity({ ...key, quantity: item.quantity - 1 })}
+  >
+    −
+  </button>
+
+  <span
+    style={{
+      minWidth: 20,
+      textAlign: "center",
+      fontSize: 14,
+      fontWeight: 600,
+      color: theme === 'dark' ? "#e8e8f0" : "#1a1a1e",
+    }}
+  >
+    {item.quantity}
+  </span>
+
+  <button
+    style={theme === 'dark' ? s.qtyBtn : s.qtyBtnLight}
+    onClick={() => updateQuantity({ ...key, quantity: item.quantity + 1 })}
+  >
+    +
+  </button>
+
+  <button
+    style={theme === 'dark' ? s.removeBtn : s.removeBtnLight}
+    onClick={() => removeFromCart(key)}
+  >
+    Remove
+  </button>
+</div>
         </div>
       </div>
     </div>

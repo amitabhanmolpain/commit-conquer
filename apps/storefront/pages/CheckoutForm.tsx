@@ -71,22 +71,6 @@ const fmtExpiry = (v: string) => {
 
 
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0c0c0e; --surface: #141417; --surface2: #1c1c21;
-    --border: #2a2a31; --border-hover: #404050;
-    --text: #e8e8f0; --text-muted: #6b6b80; --text-dim: #9999aa;
-    --accent: #7c6aff; --accent-dim: rgba(124,106,255,0.15); --accent-glow: rgba(124,106,255,0.3);
-    --green: #3ddc97; --green-dim: rgba(61,220,151,0.12);
-    --amber: #f5a623; --amber-dim: rgba(245,166,35,0.12);
-    --red: #ff5c5c; --red-dim: rgba(255,92,92,0.12);
-    --radius: 6px; --radius-lg: 10px;
-    --mono: 'DM Mono', monospace; --sans: 'Syne', sans-serif;
-    --transition: 160ms cubic-bezier(0.4,0,0.2,1);
-  }
-
   .checkout-root {
     min-height: 100vh; background: var(--bg); color: var(--text);
     font-family: var(--sans);
@@ -275,17 +259,14 @@ const css = `
 `;
 
 
-const STEPS: { key: Step; label: string }[] = [
-  { key: "address", label: "Address" },
-  { key: "shipping", label: "Shipping" },
-  { key: "payment", label: "Payment" },
-  { key: "review", label: "Review" },
-];
+
+
+ 
 
 
 export default function CheckoutForm() {
-  const { items, total } = useCart();
-  const { clearCart } = useCartActions();
+const { items, total } = useCart();
+const { clearCart } = useCartActions();
 
   const [step, setStep] = useState<Step>("address");
   const [address, setAddress] = useState<AddressForm>(EMPTY_ADDRESS);
@@ -300,9 +281,9 @@ export default function CheckoutForm() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [discountError, setDiscountError] = useState<string | null>(null);
 
-  const TAX_RATE = 0.08;
-  const discountAmt = discountApplied ? Math.round(total * 0.1) : 0;
-  const subtotal = total * 100;
+  const TAX_RATE = 0.08875;
+  const subtotal = total; 
+  const discountAmt = discountApplied ? Math.round(subtotal * 0.1) : 0;
   const shipping = shippingOption.price;
   const tax = Math.round((subtotal - discountAmt) * TAX_RATE);
   const grandTotal = subtotal - discountAmt + shipping + tax;
@@ -717,11 +698,11 @@ export default function CheckoutForm() {
                       <div className="review-item-info">
                         <div className="review-item-title">{item.title}</div>
                         <div className="review-item-meta">
-                          Qty {item.quantity} × ${item.price?.toFixed(2)}
+                          Qty {item.quantity} × ${(item.price / 100).toFixed(2)}
                         </div>
                       </div>
                       <div className="review-item-price">
-                        ${((item.price ?? 0) * item.quantity).toFixed(2)}
+                        ${(((item.price ?? 0) * item.quantity) / 100).toFixed(2)}
                       </div>
                     </div>
                   ))}
@@ -801,7 +782,7 @@ export default function CheckoutForm() {
                     <div className="summary-item-qty">×{item.quantity}</div>
                   </div>
                   <div className="summary-item-price">
-                    ${((item.price ?? 0) * item.quantity).toFixed(2)}
+                    ${(((item.price ?? 0) * item.quantity) / 100).toFixed(2)}
                   </div>
                 </div>
               ))}
