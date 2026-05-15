@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useCartDispatch } from "../Layout";
+import { useCartActions } from "../hooks/useCart";
 import CartDrawer from "../CartDrawer";
 
 const API = "/api/store";
@@ -46,7 +46,7 @@ async function fetchProduct(handle: string) {
 
 export default function ProductDetail() {
   const { handle } = useParams<{ handle: string }>();
-  const dispatch   = useCartDispatch() as any;
+  const { addToCart: addCartItem, toggleCart } = useCartActions();
   const navigate   = useNavigate();
 
   const { data: product, isLoading, error } = useQuery({
@@ -63,19 +63,16 @@ export default function ProductDetail() {
   const addToCart = () => {
     if (!product) return;
     const variant = product.variants?.find((v: any) => v.id === selectedVariant) ?? product.variants?.[0];
-    dispatch?.({
-      type: "ADD_ITEM",
-      payload: {
-        id:        product.id,
-        variantId: variant?.id ?? "default",
-        title:     product.title,
-        price:     (product.price ?? 0) / 100,
-        thumbnail: product.thumbnail,
-        size:      variant?.title,
-        quantity:  qty,
-      },
+    void addCartItem({
+      id:        product.id,
+      variantId: variant?.id ?? "default",
+      title:     product.title,
+      price:     (product.price ?? 0) / 100,
+      thumbnail: product.thumbnail,
+      size:      variant?.title,
+      quantity:  qty,
     });
-    dispatch?.({ type: "TOGGLE_CART", payload: true });
+    toggleCart(true);
     setToast("Added to cart!");
     setTimeout(() => setToast(null), 2500);
   };

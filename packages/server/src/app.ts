@@ -6,8 +6,10 @@ import express, { Request, Response } from 'express';
 import { UserService } from './services/userService';
 import { CommitService } from './services/commitService';
 import { LeaderboardService } from './services/leaderboardService';
+import { CartService } from './services/cartService';
 import { UserController } from './controllers/userController';
 import { CommitController } from './controllers/commitController';
+import { CartController } from './controllers/cartController';
 import { authenticate } from './middleware/authenticate';
 import { validateBody } from './middleware/validateBody';
 import { errorHandler } from './middleware/errorHandler';
@@ -19,9 +21,11 @@ export function createApp() {
   const userService       = new UserService();
   const commitService     = new CommitService();
   const leaderboardService = new LeaderboardService();
+  const cartService       = new CartService();
 
   const userController   = new UserController(userService);
   const commitController = new CommitController(commitService);
+  const cartController   = new CartController(cartService);
 
   // ── User routes ────────────────────────────────────────────────────────────
   app.get('/api/users', (req, res, next) =>
@@ -80,6 +84,35 @@ export function createApp() {
       next(err);
     }
   });
+
+  // ── Store/Cart routes ──────────────────────────────────────────────────────
+  app.post('/api/store/carts', (req, res, next) =>
+    cartController.createCart(req, res, next)
+  );
+
+  app.get('/api/store/carts/:cartId', (req, res, next) =>
+    cartController.getCart(req, res, next)
+  );
+
+  app.post('/api/store/carts/:cartId/items', (req, res, next) =>
+    cartController.addItemToCart(req, res, next)
+  );
+
+  app.delete('/api/store/carts/:cartId/items/:lineId', (req, res, next) =>
+    cartController.removeItemFromCart(req, res, next)
+  );
+
+  app.patch('/api/store/carts/:cartId/items/:lineId', (req, res, next) =>
+    cartController.updateItemQuantity(req, res, next)
+  );
+
+  app.delete('/api/store/carts/:cartId', (req, res, next) =>
+    cartController.clearCart(req, res, next)
+  );
+
+  app.post('/api/store/carts/:cartId/seed', (req, res, next) =>
+    cartController.seedCartFromItems(req, res, next)
+  );
 
   // ── Health check ───────────────────────────────────────────────────────────
   app.get('/api/health', (_req: Request, res: Response) => {

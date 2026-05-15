@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useCartState, useCartDispatch } from "../Layout";
-import CartDrawer from "../CartDrawer";
+import { useCartActions } from "../hooks/useCart";
 import Onboarding from "../Onboarding";
 import Walkthrough from "../Walkthrough";
 
@@ -18,6 +17,7 @@ interface Product {
   price: number;         
   originalPrice?: number;
   inventory: number;
+  variantId?: string;
   tags: string[];
   rating: number;
   reviewCount: number;
@@ -55,6 +55,37 @@ const PRODUCT_DATA: Product[] = Array.from({ length: 60 }, (_, i) => {
   };
 }).filter((p) => p.status === "published");
 
+const API = "/api/store";
+const LIMIT = 12;
+
+function mapBackendProduct(product: any, index: number): Product {
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  const firstAvailable = variants.find((variant: any) => variant.inventory_quantity > 0) ?? variants[0];
+  const priceCents = firstAvailable?.price ?? 0;
+  const inventory = variants.reduce((sum: number, variant: any) => sum + (variant.inventory_quantity ?? 0), 0);
+
+  return {
+    id: product.id,
+    handle: product.handle,
+    title: product.title,
+    category: product.category ?? "Products",
+    status: product.status ?? "published",
+    thumbnail: product.thumbnail || `https://picsum.photos/seed/${product.id}/400/500`,
+    price: priceCents / 100,
+    inventory,
+    variantId: firstAvailable?.id,
+    tags: Array.isArray(product.tags) ? product.tags : [],
+    rating: 4.2 + ((index % 6) * 0.1),
+    reviewCount: 12 + index * 7,
+  };
+}
+
+function mapSort(sortBy: string) {
+  if (sortBy === "price-lo") return "price_asc";
+  if (sortBy === "price-hi") return "price_desc";
+  return "newest";
+}
+
 async function fetchProducts({
   pageParam = 0,
   search,
@@ -68,8 +99,35 @@ async function fetchProducts({
   sortBy: string;
   tags: string[];
 }): Promise<FetchResult> {
+  const params = new URLSearchParams({
+    offset: String(pageParam * LIMIT),
+    limit: String(LIMIT),
+    status: "published",
+    sort: mapSort(sortBy),
+  });
+
+  if (search.trim()) params.set("search", search.trim());
+  if (category !== "all") params.set("category", category);
+
+  try {
+    const response = await fetch(`${API}/products?${params.toString()}`);
+    if (response.ok) {
+      const result = await response.json();
+      const products = (result.data ?? [])
+        .map((product: any, index: number) => mapBackendProduct(product, pageParam * LIMIT + index))
+        .filter((product: Product) => tags.length === 0 || tags.some((tag) => product.tags.includes(tag)));
+
+      return {
+        products,
+        nextPage: result.has_more ? pageParam + 1 : undefined,
+        total: result.total ?? result.count ?? products.length,
+      };
+    }
+  } catch {
+    // Fall back to local demo data when the backend is not running.
+  }
+
   await new Promise((r) => setTimeout(r, 400));
-  const LIMIT = 12;
 
   let result = [...PRODUCT_DATA];
 
@@ -549,15 +607,12 @@ function SkeletonCard() {
 
 
 export default function StorefrontPage() {
-  const { itemCount } = useCartState();
-  
-  const { addItem } = useCartDispatch() as any;
+  const { addToCart } = useCartActions();
 
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [walkthroughActive, setWalkthroughActive] = useState(false);
 
-  const [cartOpen, setCartOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("all");
@@ -608,8 +663,9 @@ export default function StorefrontPage() {
   const total = data?.pages[0]?.total ?? 0;
 
   const handleAddToCart = useCallback((product: Product) => {
-    addItem({
+    void addToCart({
       id: product.id,
+      variantId: product.variantId,
       title: product.title,
       price: product.price,
       thumbnail: product.thumbnail,
@@ -617,7 +673,7 @@ export default function StorefrontPage() {
     });
     setToast(`${product.title} added to cart`);
     setTimeout(() => setToast(null), 2200);
-  }, [addItem]);
+  }, [addToCart]);
 
   const toggleTag = (tag: string) => {
     setActiveTags((prev) => prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]);
@@ -840,9 +896,6 @@ export default function StorefrontPage() {
           )}
         </div>
       </div>
-
-      
-      {cartOpen && <CartDrawer />}
 
       
       {toast && (

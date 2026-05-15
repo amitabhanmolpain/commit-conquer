@@ -1,12 +1,12 @@
 
 
-import { useCartState, useCartDispatch } from "./Layout";
+import { useCart, useCartActions } from "./hooks/useCart";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export default function CartDrawer() {
-  const cart     = useCartState();
-  const dispatch = useCartDispatch();
+  const cart = useCart();
+  const { toggleCart } = useCartActions();
   const navigate = useNavigate();
   const [theme, setTheme] = useState('dark');
 
@@ -15,7 +15,7 @@ export default function CartDrawer() {
     setTheme(savedTheme);
   }, []);
 
-  const close = () => dispatch({ type: "TOGGLE_CART", payload: false });
+  const close = () => toggleCart(false);
 
   const goCheckout = () => {
     close();
@@ -42,7 +42,11 @@ export default function CartDrawer() {
         </div>
 
         <div style={bodyStyle}>
-          {cart.items.length === 0 ? (
+          {cart.isHydrating && cart.items.length === 0 ? (
+            <div style={emptyStyle}>
+              <p style={{ color: theme === 'dark' ? "#888" : "#666", marginTop: 12 }}>Restoring cart...</p>
+            </div>
+          ) : cart.items.length === 0 ? (
             <div style={emptyStyle}>
               <p style={{ fontSize: 36 }}>🛒</p>
               <p style={{ color: theme === 'dark' ? "#666" : "#999", marginTop: 12 }}>Your cart is empty</p>
@@ -73,7 +77,7 @@ export default function CartDrawer() {
 }
 
 function CartItem({ item, theme }) {
-  const dispatch = useCartDispatch();
+  const { removeFromCart, updateQuantity } = useCartActions();
   const key = { id: item.id, variantId: item.variantId };
   const itemStyle = theme === 'dark' ? s.item : s.itemLight;
 
@@ -89,10 +93,10 @@ function CartItem({ item, theme }) {
           ${(item.price * item.quantity).toFixed(2)}
         </p>
         <div style={s.qtyRow}>
-          <button style={theme === 'dark' ? s.qtyBtn : s.qtyBtnLight} onClick={() => dispatch({ type: "UPDATE_QTY", payload: { ...key, quantity: item.quantity - 1 } })}>−</button>
+          <button style={theme === 'dark' ? s.qtyBtn : s.qtyBtnLight} onClick={() => updateQuantity({ ...key, quantity: item.quantity - 1 })}>−</button>
           <span style={{ minWidth: 20, textAlign: "center", fontSize: 14, fontWeight: 600, color: theme === 'dark' ? "#e8e8f0" : "#1a1a1e" }}>{item.quantity}</span>
-          <button style={theme === 'dark' ? s.qtyBtn : s.qtyBtnLight} onClick={() => dispatch({ type: "UPDATE_QTY", payload: { ...key, quantity: item.quantity + 1 } })}>+</button>
-          <button style={theme === 'dark' ? s.removeBtn : s.removeBtnLight} onClick={() => dispatch({ type: "REMOVE_ITEM", payload: key })}>Remove</button>
+          <button style={theme === 'dark' ? s.qtyBtn : s.qtyBtnLight} onClick={() => updateQuantity({ ...key, quantity: item.quantity + 1 })}>+</button>
+          <button style={theme === 'dark' ? s.removeBtn : s.removeBtnLight} onClick={() => removeFromCart(key)}>Remove</button>
         </div>
       </div>
     </div>

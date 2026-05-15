@@ -1,81 +1,16 @@
-
-
-import { createContext, useContext, useReducer, useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, Link, NavLink, useNavigate } from "react-router-dom";
+import { useCart, useCartActions, useHydrateCart } from "./hooks/useCart";
 
 
-
-const CartStateCtx    = createContext(null);
-const CartDispatchCtx = createContext(null);
-
-function cartReducer(state, action) {
-  switch (action.type) {
-    case "ADD_ITEM": {
-      const key = (i) => `${i.id}__${i.variantId ?? "default"}`;
-      const exists = state.items.find((i) => key(i) === key(action.payload));
-      if (exists) {
-        return {
-          ...state,
-          items: state.items.map((i) =>
-            key(i) === key(action.payload)
-              ? { ...i, quantity: i.quantity + (action.payload.quantity ?? 1) }
-              : i
-          ),
-        };
-      }
-      return {
-        ...state,
-        items: [...state.items, { ...action.payload, quantity: action.payload.quantity ?? 1 }],
-      };
-    }
-    case "REMOVE_ITEM": {
-      const key = `${action.payload.id}__${action.payload.variantId ?? "default"}`;
-      return { ...state, items: state.items.filter((i) => `${i.id}__${i.variantId ?? "default"}` !== key) };
-    }
-    case "UPDATE_QTY": {
-      const key = `${action.payload.id}__${action.payload.variantId ?? "default"}`;
-      if (action.payload.quantity <= 0)
-        return { ...state, items: state.items.filter((i) => `${i.id}__${i.variantId ?? "default"}` !== key) };
-      return {
-        ...state,
-        items: state.items.map((i) =>
-          `${i.id}__${i.variantId ?? "default"}` === key ? { ...i, quantity: action.payload.quantity } : i
-        ),
-      };
-    }
-    case "CLEAR":
-      return { ...state, items: [] };
-    case "TOGGLE_CART":
-      return { ...state, isOpen: action.payload ?? !state.isOpen };
-    default:
-      return state;
-  }
-}
-
-function CartProvider({ children }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [], isOpen: false });
-  const derived = {
-    ...state,
-    count: state.items.reduce((n, i) => n + i.quantity, 0),
-    total: state.items.reduce((s, i) => s + i.price * i.quantity, 0),
-  };
-  return (
-    <CartStateCtx.Provider value={derived}>
-      <CartDispatchCtx.Provider value={dispatch}>
-        {children}
-      </CartDispatchCtx.Provider>
-    </CartStateCtx.Provider>
-  );
-}
-
-export function useCartState()    { return useContext(CartStateCtx); }
-export function useCartDispatch() { return useContext(CartDispatchCtx); }
+export function useCartState() { return useCart(); }
+export function useCartDispatch() { return useCartActions().dispatch; }
 
 
 
 function Header({ theme, onThemeToggle }) {
-  const cart     = useCartState();
-  const dispatch = useCartDispatch();
+  const cart = useCart();
+  const { toggleCart } = useCartActions();
   const navigate = useNavigate();
 
   const navStyle = ({ isActive }) => ({
@@ -180,7 +115,10 @@ function Header({ theme, onThemeToggle }) {
       </button>
 
       <button
-        onClick={() => dispatch({ type: "TOGGLE_CART", payload: true })}
+        onClick={() => {
+          toggleCart(false);
+          navigate("/cart");
+        }}
         style={{
           position: "relative",
           background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, rgba(124,106,255,0.08) 0%, rgba(124,106,255,0.12) 100%)",
@@ -204,12 +142,14 @@ function Header({ theme, onThemeToggle }) {
           e.target.style.boxShadow = theme === 'light' ? "0 2px 8px rgba(124,106,255,0.1)" : "none";
         }}
         aria-label="Open cart"
+        title="Open cart"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
           <line x1="3" y1="6" x2="21" y2="6"/>
           <path d="M16 10a4 4 0 01-8 0"/>
         </svg>
+        {cart?.isHydrating && <span style={s.syncDot} />}
         {cart?.count > 0 && <span style={s.badge}>{cart.count > 99 ? "99+" : cart.count}</span>}
       </button>
     </header>
@@ -237,6 +177,7 @@ function Footer({ theme }) {
 
 export default function Layout() {
   const [theme, setTheme] = useState('dark');
+  useHydrateCart();
 
   useEffect(() => {
     // Read theme from localStorage on mount
@@ -253,15 +194,13 @@ export default function Layout() {
   };
 
   return (
-    <CartProvider>
-      <div style={theme === 'dark' ? s.root : s.rootLight}>
-        <Header theme={theme} onThemeToggle={handleThemeToggle} />
-        <main style={theme === 'dark' ? s.main : s.mainLight}>
-          <Outlet />   {/* React Router renders child page here */}
-        </main>
-        <Footer theme={theme} />
-      </div>
-    </CartProvider>
+    <div style={theme === 'dark' ? s.root : s.rootLight}>
+      <Header theme={theme} onThemeToggle={handleThemeToggle} />
+      <main style={theme === 'dark' ? s.main : s.mainLight}>
+        <Outlet />   {/* React Router renders child page here */}
+      </main>
+      <Footer theme={theme} />
+    </div>
   );
 }
 
@@ -278,6 +217,12 @@ const s = {
     fontSize: 10, fontWeight: 700, borderRadius: "50%",
     width: 17, height: 17, display: "flex", alignItems: "center", justifyContent: "center",
     boxShadow: "0 2px 8px rgba(124,106,255,0.3)",
+  },
+  syncDot: {
+    position: "absolute", top: 4, right: 4,
+    width: 7, height: 7, borderRadius: "50%",
+    background: "#7c6aff",
+    boxShadow: "0 0 0 3px rgba(124,106,255,0.18)",
   },
   main:    { flex: 1 },
   mainLight: { flex: 1, background: "linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%)" },

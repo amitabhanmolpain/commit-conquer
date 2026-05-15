@@ -9,6 +9,7 @@ import "./theme.css";
 
 
 const StorefrontHome = lazy(() => import("./pages/index"));
+const CartPage = lazy(() => import("./pages/cart"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutForm"));
 const ProductDetail = lazy(() => import("./pages/product-detail"));
 const CollectionsPage = lazy(() => import("./pages/collections"));
@@ -53,6 +54,7 @@ createRoot(rootEl).render(
             <Route element={<Layout />}>
               <Route path="/" element={<StorefrontHome />} />
               <Route path="/products/:handle" element={<ProductDetail />} />
+              <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/collections" element={<CollectionsPage />} />
               <Route

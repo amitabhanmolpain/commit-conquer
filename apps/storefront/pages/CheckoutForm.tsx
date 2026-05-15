@@ -1,7 +1,7 @@
 
 
 import { useState, useCallback } from "react";
-import { useCartState, useCartDispatch } from "../Layout";
+import { useCart, useCartActions } from "../hooks/useCart";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface AddressForm {
@@ -284,9 +284,8 @@ const STEPS: { key: Step; label: string }[] = [
 
 
 export default function CheckoutForm() {
-  const { items, total } = useCartState() ?? { items: [], total: 0 };
-  const dispatch = useCartDispatch();
-  const clearCart: () => void = (dispatch as any)?.clearCart ?? (() => {});
+  const { items, total } = useCart();
+  const { clearCart } = useCartActions();
 
   const [step, setStep] = useState<Step>("address");
   const [address, setAddress] = useState<AddressForm>(EMPTY_ADDRESS);
@@ -363,7 +362,7 @@ export default function CheckoutForm() {
     await new Promise((r) => setTimeout(r, 1800));
     const mockOrderId = `ORD-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
     setOrderId(mockOrderId);
-    clearCart();
+    await clearCart();
     setStep("confirmed");
     setIsPlacing(false);
   };
