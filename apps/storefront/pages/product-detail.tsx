@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCartActions } from "../hooks/useCart";
 import CartDrawer from "../CartDrawer";
 
-const API = "/api/store";
+const API = "/api/v1/store";
 
 async function fetchProduct(handle: string) {
   
