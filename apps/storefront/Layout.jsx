@@ -1,18 +1,9 @@
-// apps/storefront/Layout.jsx
-// Wraps all storefront pages with:
-//   - CartProvider (global cart state)
-//   - Header with nav + cart icon
-//   - Footer
-//   - <Outlet /> for child routes (React Router)
-//
-// Exports:
-//   useCartState()    → { items, count, total, isOpen }
-//   useCartDispatch() → dispatch({ type, payload })
+
 
 import { createContext, useContext, useReducer, useState, useEffect } from "react";
 import { Outlet, Link, NavLink, useNavigate } from "react-router-dom";
 
-// ─── Cart Context & Reducer ────────────────────────────────────────────────────
+
 
 const CartStateCtx    = createContext(null);
 const CartDispatchCtx = createContext(null);
@@ -80,7 +71,7 @@ function CartProvider({ children }) {
 export function useCartState()    { return useContext(CartStateCtx); }
 export function useCartDispatch() { return useContext(CartDispatchCtx); }
 
-// ─── Header ───────────────────────────────────────────────────────────────────
+
 
 function Header({ theme, onThemeToggle }) {
   const cart     = useCartState();
@@ -225,7 +216,7 @@ function Header({ theme, onThemeToggle }) {
   );
 }
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
+
 
 function Footer({ theme }) {
   return (
@@ -242,7 +233,7 @@ function Footer({ theme }) {
   );
 }
 
-// ─── Root Layout ──────────────────────────────────────────────────────────────
+
 
 export default function Layout() {
   const [theme, setTheme] = useState('dark');
@@ -274,7 +265,7 @@ export default function Layout() {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+
 
 const s = {
   // Dark theme
