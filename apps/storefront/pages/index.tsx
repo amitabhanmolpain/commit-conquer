@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCartState, useCartDispatch } from "../Layout";
 import CartDrawer from "../CartDrawer";
+import Onboarding from "../Onboarding";
+import Walkthrough from "../Walkthrough";
 
 
 interface Product {
@@ -551,6 +553,10 @@ export default function StorefrontPage() {
   
   const { addItem } = useCartDispatch() as any;
 
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [walkthroughActive, setWalkthroughActive] = useState(false);
+
   const [cartOpen, setCartOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -562,6 +568,14 @@ export default function StorefrontPage() {
   const [toast, setToast] = useState<string | null>(null);
 
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Get theme from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") as "dark" | "light" | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
 
   
   useEffect(() => {
@@ -663,7 +677,7 @@ export default function StorefrontPage() {
       </section>
 
       
-      <div className="cat-strip">
+      <div className="cat-strip" data-tour="categories">
         {CATEGORIES.map((c) => (
           <button
             key={c}
@@ -736,7 +750,7 @@ export default function StorefrontPage() {
         <div className="grid-col">
           
           <div className="toolbar">
-            <div className="search-wrap">
+            <div className="search-wrap" data-tour="search">
               <span className="search-icon">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -754,6 +768,7 @@ export default function StorefrontPage() {
               className="sort-select"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
+              data-tour="sort"
             >
               <option value="newest">Newest</option>
               <option value="price-lo">Price ↑</option>
@@ -791,7 +806,7 @@ export default function StorefrontPage() {
           </div>
 
           
-          <div className={`product-grid grid-${viewMode}`}>
+          <div className={`product-grid grid-${viewMode}`} data-tour="products">
             {isLoading
               ? Array.from({ length: 12 }, (_, i) => <SkeletonCard key={i} />)
               : allProducts.length === 0
@@ -838,6 +853,18 @@ export default function StorefrontPage() {
           {toast}
         </div>
       )}
+
+      {/* Onboarding Components */}
+      <Onboarding
+        onGetStarted={() => setWalkthroughActive(true)}
+        onSkip={() => {}}
+        theme={theme}
+      />
+      <Walkthrough
+        isActive={walkthroughActive}
+        onFinish={() => setWalkthroughActive(false)}
+        theme={theme}
+      />
     </>
   );
 }
