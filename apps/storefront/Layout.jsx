@@ -9,7 +9,7 @@
 //   useCartState()    → { items, count, total, isOpen }
 //   useCartDispatch() → dispatch({ type, payload })
 
-import { createContext, useContext, useReducer } from "react";
+import { createContext, useContext, useReducer, useState, useEffect } from "react";
 import { Outlet, Link, NavLink, useNavigate } from "react-router-dom";
 
 // ─── Cart Context & Reducer ────────────────────────────────────────────────────
@@ -82,22 +82,42 @@ export function useCartDispatch() { return useContext(CartDispatchCtx); }
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 
-function Header() {
+function Header({ theme, onThemeToggle }) {
   const cart     = useCartState();
   const dispatch = useCartDispatch();
   const navigate = useNavigate();
 
   const navStyle = ({ isActive }) => ({
     textDecoration: "none",
-    color: isActive ? "#7c6aff" : "#aaa",
+    color: isActive ? "#7c6aff" : (theme === 'dark' ? "#999" : "#555"),
     fontSize: 14,
-    fontWeight: 500,
-    transition: "color 0.15s",
+    fontWeight: isActive ? 600 : 500,
+    transition: "all 0.2s ease",
+    paddingBottom: isActive ? 2 : 0,
+    borderBottom: isActive && theme === 'light' ? "2px solid #7c6aff" : "none",
   });
 
+  const headerStyle = theme === 'dark' ? {
+    position: "sticky", top: 0, zIndex: 100,
+    display: "flex", alignItems: "center", gap: 24,
+    padding: "0 32px", height: 60,
+    background: "rgba(12,12,14,0.95)", backdropFilter: "blur(12px)",
+    borderBottom: "1px solid rgba(42,42,49,0.5)",
+  } : {
+    position: "sticky", top: 0, zIndex: 100,
+    display: "flex", alignItems: "center", gap: 24,
+    padding: "0 32px", height: 60,
+    background: "linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(250,251,252,0.95) 100%)", 
+    backdropFilter: "blur(12px)",
+    borderBottom: "1px solid rgba(124,106,255,0.12)",
+    boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
+  };
+
+  const logoStyle = theme === 'dark' ? { fontWeight: 800, fontSize: 17, textDecoration: "none", color: "#e8e8f0", letterSpacing: "-0.5px", marginRight: "auto" } : { fontWeight: 800, fontSize: 17, textDecoration: "none", color: "#1a1a1e", letterSpacing: "-0.5px", marginRight: "auto" };
+
   return (
-    <header style={s.header}>
-      <Link to="/" style={s.logo}>commit&amp;conquer</Link>
+    <header style={headerStyle}>
+      <Link to="/" style={logoStyle}>commit&amp;conquer</Link>
 
       <nav style={s.nav}>
         <NavLink to="/"           end style={navStyle}>Shop</NavLink>
@@ -107,14 +127,91 @@ function Header() {
         {/* Admin link — for hackathon convenience */}
         <NavLink to="/admin"          style={({ isActive }) => ({
           ...navStyle({ isActive }),
-          background: isActive ? "rgba(124,106,255,0.15)" : "rgba(255,255,255,0.05)",
+          background: isActive ? "rgba(124,106,255,0.15)" : (theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(124,106,255,0.08)"),
           padding: "4px 10px", borderRadius: 6, fontSize: 13,
+          transition: "all 0.2s ease",
         })}>Admin ↗</NavLink>
       </nav>
 
       <button
+        onClick={onThemeToggle}
+        style={{
+          background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, rgba(124,106,255,0.08) 0%, rgba(124,106,255,0.12) 100%)",
+          border: theme === 'dark' ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(124,106,255,0.25)",
+          color: theme === 'dark' ? "#e8e8f0" : "#7c6aff",
+          cursor: "pointer",
+          padding: "6px 10px",
+          borderRadius: 8,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.3s cubic-bezier(0.4,0,0.2,1)",
+          position: "relative",
+          overflow: "hidden",
+          boxShadow: theme === 'light' ? "0 2px 8px rgba(124,106,255,0.1)" : "none",
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.background = theme === 'dark' 
+            ? "rgba(255,255,255,0.1)" 
+            : "linear-gradient(135deg, rgba(124,106,255,0.15) 0%, rgba(124,106,255,0.2) 100%)";
+          e.target.style.transform = "scale(1.05)";
+          e.target.style.boxShadow = theme === 'light' ? "0 4px 16px rgba(124,106,255,0.2)" : "0 2px 12px rgba(124,106,255,0.2)";
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.background = theme === 'dark' 
+            ? "rgba(255,255,255,0.05)" 
+            : "linear-gradient(135deg, rgba(124,106,255,0.08) 0%, rgba(124,106,255,0.12) 100%)";
+          e.target.style.transform = "scale(1)";
+          e.target.style.boxShadow = theme === 'light' ? "0 2px 8px rgba(124,106,255,0.1)" : "none";
+        }}
+        aria-label="Toggle theme"
+        title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+      >
+        {theme === 'dark' ? (
+          // Sun Icon - for switching to light theme
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        ) : (
+          // Moon Icon - for switching to dark theme
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        )}
+      </button>
+
+      <button
         onClick={() => dispatch({ type: "TOGGLE_CART", payload: true })}
-        style={s.cartBtn}
+        style={{
+          position: "relative",
+          background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, rgba(124,106,255,0.08) 0%, rgba(124,106,255,0.12) 100%)",
+          border: theme === 'dark' ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(124,106,255,0.25)",
+          cursor: "pointer",
+          color: theme === 'dark' ? "#e8e8f0" : "#7c6aff",
+          padding: "6px 10px",
+          borderRadius: 8,
+          marginLeft: 8,
+          display: "flex",
+          alignItems: "center",
+          transition: "all 0.2s ease",
+          boxShadow: theme === 'light' ? "0 2px 8px rgba(124,106,255,0.1)" : "none",
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.background = theme === 'dark' ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg, rgba(124,106,255,0.15) 0%, rgba(124,106,255,0.2) 100%)";
+          e.target.style.boxShadow = theme === 'light' ? "0 4px 16px rgba(124,106,255,0.2)" : "0 2px 12px rgba(124,106,255,0.2)";
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.background = theme === 'dark' ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, rgba(124,106,255,0.08) 0%, rgba(124,106,255,0.12) 100%)";
+          e.target.style.boxShadow = theme === 'light' ? "0 2px 8px rgba(124,106,255,0.1)" : "none";
+        }}
         aria-label="Open cart"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -130,15 +227,15 @@ function Header() {
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
-function Footer() {
+function Footer({ theme }) {
   return (
-    <footer style={s.footer}>
+    <footer style={theme === 'dark' ? s.footer : s.footerLight}>
       <div style={s.footerInner}>
-        <span style={{ color: "#555", fontSize: 13 }}>© {new Date().getFullYear()} Commit &amp; Conquer</span>
+        <span style={theme === 'dark' ? { color: "#555", fontSize: 13 } : { color: "#999", fontSize: 13 }}>© {new Date().getFullYear()} Commit &amp; Conquer</span>
         <div style={{ display: "flex", gap: 20 }}>
-          <Link to="/about"       style={s.footerLink}>About</Link>
-          <Link to="/collections" style={s.footerLink}>Collections</Link>
-          <Link to="/account"     style={s.footerLink}>Account</Link>
+          <Link to="/about"       style={theme === 'dark' ? s.footerLink : s.footerLinkLight}>About</Link>
+          <Link to="/collections" style={theme === 'dark' ? s.footerLink : s.footerLinkLight}>Collections</Link>
+          <Link to="/account"     style={theme === 'dark' ? s.footerLink : s.footerLinkLight}>Account</Link>
         </div>
       </div>
     </footer>
@@ -148,14 +245,30 @@ function Footer() {
 // ─── Root Layout ──────────────────────────────────────────────────────────────
 
 export default function Layout() {
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    // Read theme from localStorage on mount
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme);
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }, []);
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
+
   return (
     <CartProvider>
-      <div style={s.root}>
-        <Header />
-        <main style={s.main}>
+      <div style={theme === 'dark' ? s.root : s.rootLight}>
+        <Header theme={theme} onThemeToggle={handleThemeToggle} />
+        <main style={theme === 'dark' ? s.main : s.mainLight}>
           <Outlet />   {/* React Router renders child page here */}
         </main>
-        <Footer />
+        <Footer theme={theme} />
       </div>
     </CartProvider>
   );
@@ -164,29 +277,34 @@ export default function Layout() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const s = {
+  // Dark theme
   root:    { minHeight: "100vh", display: "flex", flexDirection: "column", background: "#0c0c0e", color: "#e8e8f0" },
-  header:  {
-    position: "sticky", top: 0, zIndex: 100,
-    display: "flex", alignItems: "center", gap: 24,
-    padding: "0 32px", height: 60,
-    background: "rgba(12,12,14,0.9)", backdropFilter: "blur(12px)",
-    borderBottom: "1px solid #2a2a31",
-  },
-  logo:    { fontWeight: 800, fontSize: 17, textDecoration: "none", color: "#e8e8f0", letterSpacing: "-0.5px", marginRight: "auto" },
+  rootLight: { minHeight: "100vh", display: "flex", flexDirection: "column", background: "linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%)", color: "#1a1a1e" },
   nav:     { display: "flex", alignItems: "center", gap: 20 },
-  cartBtn: {
-    position: "relative", background: "none", border: "none",
-    cursor: "pointer", color: "#e8e8f0", padding: "6px 8px",
-    borderRadius: 8, marginLeft: 8, display: "flex", alignItems: "center",
-  },
   badge:   {
     position: "absolute", top: 0, right: 0,
-    background: "#7c6aff", color: "#fff",
+    background: "linear-gradient(135deg, #7c6aff 0%, #9b88ff 100%)", color: "#fff",
     fontSize: 10, fontWeight: 700, borderRadius: "50%",
     width: 17, height: 17, display: "flex", alignItems: "center", justifyContent: "center",
+    boxShadow: "0 2px 8px rgba(124,106,255,0.3)",
   },
   main:    { flex: 1 },
-  footer:  { borderTop: "1px solid #1c1c21", padding: "24px 32px" },
+  mainLight: { flex: 1, background: "linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%)" },
+  footer:  { borderTop: "1px solid #1c1c21", padding: "24px 32px", background: "#0c0c0e" },
+  footerLight: { 
+    borderTop: "1px solid rgba(124,106,255,0.15)", 
+    padding: "24px 32px", 
+    background: "linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(250,251,252,0.6) 100%)",
+    backdropFilter: "blur(8px)",
+    boxShadow: "0 -4px 24px rgba(0,0,0,0.03)",
+  },
   footerInner: { maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" },
-  footerLink: { color: "#555", textDecoration: "none", fontSize: 13 },
+  footerLink: { color: "#555", textDecoration: "none", fontSize: 13, transition: "color 0.2s" },
+  footerLinkLight: { 
+    color: "#666", 
+    textDecoration: "none", 
+    fontSize: 13, 
+    transition: "all 0.2s ease",
+    paddingBottom: 2,
+  },
 };

@@ -646,13 +646,6 @@ export default function StorefrontPage() {
           <a href="/about" className="nav-link">About</a>
         </div>
         <div className="nav-actions">
-          <button className="cart-btn" onClick={() => setCartOpen(true)}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
-            </svg>
-            Cart
-            {itemCount > 0 && <span className="cart-badge">{itemCount > 9 ? "9+" : itemCount}</span>}
-          </button>
         </div>
       </nav>
 

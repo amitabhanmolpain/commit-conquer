@@ -1,0 +1,159 @@
+/* Global Theme Styles */
+
+:root {
+  color-scheme: light dark;
+}
+
+/* Dark Theme (Default) */
+[data-theme="dark"] {
+  --bg-primary: #0c0c0e;
+  --bg-secondary: #141417;
+  --text-primary: #e8e8f0;
+  --text-secondary: #999;
+  --text-tertiary: #666;
+  --border-color: rgba(42, 42, 49, 0.5);
+  --accent: #7c6aff;
+  --accent-light: rgba(124, 106, 255, 0.1);
+}
+
+/* Light Theme - Beautiful & Clean with Gradients */
+[data-theme="light"] {
+  --bg-primary: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%);
+  --bg-secondary: #ffffff;
+  --text-primary: #1a1a1e;
+  --text-secondary: #555;
+  --text-tertiary: #888;
+  --border-color: rgba(124, 106, 255, 0.12);
+  --accent: #7c6aff;
+  --accent-light: rgba(124, 106, 255, 0.08);
+}
+
+/* Apply theme to body and common elements */
+[data-theme="light"] body,
+[data-theme="light"] * {
+  color-scheme: light;
+}
+
+[data-theme="dark"] body,
+[data-theme="dark"] * {
+  color-scheme: dark;
+}
+
+/* Smooth transitions between themes */
+* {
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              background-image 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prevent transitions on page load */
+*.no-transition {
+  transition: none;
+}
+
+/* Light theme enhancements */
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background: #ffffff;
+  color: #1a1a1e;
+  border: 1px solid rgba(124, 106, 255, 0.2);
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus,
+[data-theme="light"] select:focus {
+  outline: none;
+  border-color: #7c6aff;
+  box-shadow: 0 0 0 3px rgba(124, 106, 255, 0.1);
+}
+
+/* Light theme button enhancements */
+[data-theme="light"] button:not([disabled]) {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] button:not([disabled]):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(124, 106, 255, 0.15);
+}
+
+/* Light theme links hover */
+[data-theme="light"] a {
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] a:hover {
+  color: #7c6aff;
+}
+
+/* Light theme cards/containers */
+[data-theme="light"] [role="region"],
+[data-theme="light"] section {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scrollbar styling for light theme */
+[data-theme="light"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: rgba(124, 106, 255, 0.05);
+  border-radius: 4px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(124, 106, 255, 0.3);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 106, 255, 0.5);
+}
+
+/* Light theme cards with gradients */
+[data-theme="light"] [class*="card"],
+[data-theme="light"] [class*="product"],
+[data-theme="light"] [class*="item"] {
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(250,251,252,0.8) 100%);
+  border: 1px solid rgba(124, 106, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] [class*="card"]:hover,
+[data-theme="light"] [class*="product"]:hover,
+[data-theme="light"] [class*="item"]:hover {
+  background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(248,249,250,0.95) 100%);
+  border-color: rgba(124, 106, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(124, 106, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Light theme section backgrounds */
+[data-theme="light"] section,
+[data-theme="light"] article,
+[data-theme="light"] .section,
+[data-theme="light"] .container {
+  background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%);
+}
+
+/* Light theme buttons with gradients */
+[data-theme="light"] button,
+[data-theme="light"] a[role="button"] {
+  background: linear-gradient(135deg, rgba(124,106,255,0.08) 0%, rgba(124,106,255,0.12) 100%);
+  border: 1px solid rgba(124,106,255,0.15);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] button:hover,
+[data-theme="light"] a[role="button"]:hover {
+  background: linear-gradient(135deg, rgba(124,106,255,0.15) 0%, rgba(124,106,255,0.2) 100%);
+  border-color: rgba(124,106,255,0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(124, 106, 255, 0.15);
+}
